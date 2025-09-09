@@ -55,7 +55,7 @@ url = urlGetLcaMetrics + "/create_session"
 ' loop on line (the maximum of object supported by resilio API is 100)
 parts = ""
 
-For i = 2 To 3
+For i = 2 To 7
 
     part_type = ThisWorkbook.Worksheets("Sheet1").Cells(i, 1)
     machine_id = ThisWorkbook.Worksheets("Sheet1").Cells(i, 2)
@@ -63,7 +63,20 @@ For i = 2 To 3
     ' the peak_power is not used for CLUSSTER project
     quantity = ThisWorkbook.Worksheets("Sheet1").Cells(i, 5)
     Name = ThisWorkbook.Worksheets("Sheet1").Cells(i, 6)
+    die_surface = ThisWorkbook.Worksheets("Sheet1").Cells(i, 7)
+    litho = ThisWorkbook.Worksheets("Sheet1").Cells(i, 8)
     sizeGb = ThisWorkbook.Worksheets("Sheet1").Cells(i, 9)
+    technology = ThisWorkbook.Worksheets("Sheet1").Cells(i, 10)
+    casing = ThisWorkbook.Worksheets("Sheet1").Cells(i, 11)
+    
+    If die_surface = "" Then
+        die_surface = 0
+    End If
+    
+    If litho = "" Then
+        litho = 0
+    End If
+    
     If sizeGb = "" Then
         sizeGb = 0
     End If
@@ -82,11 +95,11 @@ For i = 2 To 3
                     ", ""peak_power"": " & "0" & _
                     ", ""quantity"": " & quantity & _
                     ", ""name"": """ & Name & """" & _
-                    ", ""die_surface_mm2"": " & "0" & _
-                    ", ""litho_nm"": " & "0" & _
+                    ", ""die_surface_mm2"": " & die_surface & _
+                    ", ""litho_nm"": " & litho & _
                     ", ""size_gb"": " & sizeGb & _
-                    ", ""technology"": """ & "string" & """" & _
-                    ", ""casing"": """ & "string" & """" & _
+                    ", ""technology"": """ & technology & """" & _
+                    ", ""casing"": """ & casing & """" & _
                     "}"
 
     MsgBox "part element:" & partElement
@@ -126,7 +139,7 @@ If httpRequest.status = 200 Then
     ' get the session id
     parts = Split(response, """")
     sessionId = parts(3)
-    MsgBox "Session Id: " & sessionId
+'   MsgBox "Session Id: " & sessionId
 
 
 Else
@@ -159,7 +172,8 @@ httpRequest.send
 
 If httpRequest.status = 200 Then
     response = httpRequest.responseText
-    MsgBox "Réponse (200) : " & response
+    MsgBox "Answer if parts already exist or not: Réponse (200) : " & _
+    response
 Else
     MsgBox "Échec : code " & httpRequest.status & " - " & httpRequest.statusText
 End If
