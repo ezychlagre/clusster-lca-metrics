@@ -1,8 +1,13 @@
 ' Const urlGetLcaMetrics As String = "http://91.134.23.173:5020/lca-api/"
-Const urlGetLcaMetrics As String = "http://localhost:45021"
+Const urlGetLcaMetrics As String = "http://localhost:15021"
 Dim sessionId As String
 
+Sub prepare()
 
+create_session
+PreCheck
+
+End Sub
 
 Function Ping()
 
@@ -38,7 +43,6 @@ Else
 End If
 
 End Function
-
 Function create_session()
 
 Dim url As String
@@ -48,30 +52,56 @@ Dim response As String
 
 url = urlGetLcaMetrics + "/create_session"
 
+' loop on line (the maximum of object supported by resilio API is 100)
+parts = ""
 
-    part_type = ThisWorkbook.Worksheets("Sheet1").Cells(2, 1)
-    machine_id = ThisWorkbook.Worksheets("Sheet1").Cells(2, 2)
-    escription = ThisWorkbook.Worksheets("Sheet1").Cells(2, 3)
-' the peak_power is not used for CLUSSTER project
-quantity = ThisWorkbook.Worksheets("Sheet1").Cells(2, 5)
-Name = ThisWorkbook.Worksheets("Sheet1").Cells(2, 6)
-quantity = ThisWorkbook.Worksheets("Sheet1").Cells(2, 5)
+For i = 2 To 3
+
+    part_type = ThisWorkbook.Worksheets("Sheet1").Cells(i, 1)
+    machine_id = ThisWorkbook.Worksheets("Sheet1").Cells(i, 2)
+    escription = ThisWorkbook.Worksheets("Sheet1").Cells(i, 3)
+    ' the peak_power is not used for CLUSSTER project
+    quantity = ThisWorkbook.Worksheets("Sheet1").Cells(i, 5)
+    Name = ThisWorkbook.Worksheets("Sheet1").Cells(i, 6)
+    sizeGb = ThisWorkbook.Worksheets("Sheet1").Cells(i, 9)
+    If sizeGb = "" Then
+        sizeGb = 0
+    End If
+
+    If part_type = "" Then
+        Exit For
+    Else
+        If i > 2 Then
+            parts = parts & "," ' If this is not the first line, we need to add "," between parts
+        End If
+    End If
+
+    partElement = "{ ""part_type"": """ & part_type & """" & _
+                    ", ""machine_id"": """ & machine_id & """" & _
+                    ", ""description"": """ & escription & """" & _
+                    ", ""peak_power"": " & "0" & _
+                    ", ""quantity"": " & quantity & _
+                    ", ""name"": """ & Name & """" & _
+                    ", ""die_surface_mm2"": " & "0" & _
+                    ", ""litho_nm"": " & "0" & _
+                    ", ""size_gb"": " & sizeGb & _
+                    ", ""technology"": """ & "string" & """" & _
+                    ", ""casing"": """ & "string" & """" & _
+                    "}"
+
+    MsgBox "part element:" & partElement
 
 
-requestBody = "{ ""parts"": [ { ""part_type"": """ & part_type & """" & _
-                ", ""machine_id"": """ & machine_id & """" & _
-                ", ""description"": """ & escription & """" & _
-                ", ""peak_power"": " & "0" & _
-                ", ""quantity"": " & quantity & _
-                ", ""name"": """ & Name & """" & _
-                ", ""die_surface_mm2"": " & "0" & _
-                ", ""litho_nm"": " & "0" & _
-                ", ""size_gb"": " & "0" & _
-                ", ""technology"": """ & "string" & """" & _
-                ", ""casing"": """ & "string" & """" & _
-                "} ] }"
+    parts = parts & partElement
 
-MsgBox "body: " & requestBody
+Next i
+
+parts = "{ ""parts"": [ " & parts & "] }"
+
+MsgBox "body: " & parts
+
+' write parts in log
+ThisWorkbook.Worksheets("log").Cells(1, 1) = parts
 
 ' Créer la requête HTTP
 
@@ -84,7 +114,7 @@ httpRequest.setRequestHeader "accept", "application/json"
 httpRequest.setRequestHeader "content-Type", "application/json"
 
 ' Envoyer le corps
-httpRequest.send requestBody
+httpRequest.send parts
 ' httpRequest.send
 
 ' Traiter la réponse
@@ -92,13 +122,13 @@ httpRequest.send requestBody
 If httpRequest.status = 200 Then
     response = httpRequest.responseText
     MsgBox "Réponse (200) : " & response
-    
+
     ' get the session id
     parts = Split(response, """")
     sessionId = parts(3)
     MsgBox "Session Id: " & sessionId
-    
-    
+
+
 Else
     MsgBox "Échec : code " & httpRequest.status & " - " & httpRequest.statusText
 End If
