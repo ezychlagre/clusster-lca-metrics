@@ -69,18 +69,30 @@ For i = 2 To 7
     technology = ThisWorkbook.Worksheets("Sheet1").Cells(i, 10)
     casing = ThisWorkbook.Worksheets("Sheet1").Cells(i, 11)
     
-    If die_surface = "" Then
-        die_surface = 0
+    partElement = "{ ""part_type"": """ & part_type & """" & _
+                    ", ""machine_id"": """ & machine_id & """" & _
+                    ", ""description"": """ & escription & """" & _
+                    ", ""peak_power"": " & "0" & _
+                    ", ""quantity"": " & quantity & _
+                    ", ""name"": """ & Name & """"
+    
+    If Not die_surface = "" Then
+        partElement = partElement & ", ""die_surface_mm2"": " & die_surface
     End If
     
-    If litho = "" Then
-        litho = 0
+    If Not litho = "" Then
+        partElement = partElement & ", ""litho_nm"": " & litho
     End If
     
     If sizeGb = "" Then
         sizeGb = 0
     End If
 
+    partElement = partElement & ", ""size_gb"": " & sizeGb & _
+        ", ""technology"": """ & technology & """" & _
+                    ", ""casing"": """ & casing & """" & _
+                    "}"
+    
     If part_type = "" Then
         Exit For
     Else
@@ -89,18 +101,18 @@ For i = 2 To 7
         End If
     End If
 
-    partElement = "{ ""part_type"": """ & part_type & """" & _
-                    ", ""machine_id"": """ & machine_id & """" & _
-                    ", ""description"": """ & escription & """" & _
-                    ", ""peak_power"": " & "0" & _
-                    ", ""quantity"": " & quantity & _
-                    ", ""name"": """ & Name & """" & _
-                    ", ""die_surface_mm2"": " & die_surface & _
-                    ", ""litho_nm"": " & litho & _
-                    ", ""size_gb"": " & sizeGb & _
-                    ", ""technology"": """ & technology & """" & _
-                    ", ""casing"": """ & casing & """" & _
-                    "}"
+'    partElement = "{ ""part_type"": """ & part_type & """" & _
+'                    ", ""machine_id"": """ & machine_id & """" & _
+'                    ", ""description"": """ & escription & """" & _
+'                    ", ""peak_power"": " & "0" & _
+'                    ", ""quantity"": " & quantity & _
+'                    ", ""name"": """ & Name & """" & _
+'                    ", ""die_surface_mm2"": " & die_surface & _
+'                    ", ""litho_nm"": " & litho & _
+'                    ", ""size_gb"": " & sizeGb & _
+'                    ", ""technology"": """ & technology & """" & _
+'                    ", ""casing"": """ & casing & """" & _
+'                    "}"
 
     MsgBox "part element:" & partElement
 
@@ -239,6 +251,8 @@ Else
 End If
 
 End Function
+
+
 
 
 
